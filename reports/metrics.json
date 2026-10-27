@@ -1,0 +1,233 @@
+{
+  "seed": 42,
+  "test_size": 0.3,
+  "scaling": {
+    "pdo": 20,
+    "base_score": 600,
+    "base_odds": 50,
+    "factor": 28.85390081777927,
+    "offset": 487.1228762045055
+  },
+  "economics_assumptions": {
+    "lgd": 0.75,
+    "ccf": 0.5,
+    "margin": 0.08
+  },
+  "data": {
+    "rows": 30000,
+    "columns_raw": 23,
+    "default_rate": 0.2212,
+    "n_candidates": 25,
+    "raw_sha256": "56c885f84457f6680f8438f02bfcdac9579323d8a94465ee5f26e32baa727602",
+    "missing_values": 0
+  },
+  "split": {
+    "train_rows": 21000,
+    "test_rows": 9000,
+    "train_default_rate": 0.2211904761904762,
+    "test_default_rate": 0.2212222222222222
+  },
+  "challenger_grid": [
+    {
+      "cfg": 0,
+      "learning_rate": 0.05,
+      "max_leaf_nodes": 15,
+      "min_samples_leaf": 100,
+      "cv_auc_mean": 0.7854552466977474,
+      "cv_auc_std": 0.011738050140675065
+    },
+    {
+      "cfg": 1,
+      "learning_rate": 0.05,
+      "max_leaf_nodes": 31,
+      "min_samples_leaf": 50,
+      "cv_auc_mean": 0.7842086193738957,
+      "cv_auc_std": 0.012679507779908603
+    },
+    {
+      "cfg": 2,
+      "learning_rate": 0.03,
+      "max_leaf_nodes": 7,
+      "min_samples_leaf": 200,
+      "cv_auc_mean": 0.7857210789009592,
+      "cv_auc_std": 0.011561874711676731
+    },
+    {
+      "cfg": 3,
+      "learning_rate": 0.1,
+      "max_leaf_nodes": 63,
+      "min_samples_leaf": 20,
+      "cv_auc_mean": 0.7812130214998951,
+      "cv_auc_std": 0.011504463556964778
+    }
+  ],
+  "challenger_selected_cfg": 2,
+  "cv": {
+    "champion": {
+      "auc_mean": 0.7748182070378072,
+      "auc_std": 0.010721502455763088,
+      "gini_mean": 0.5496364140756145,
+      "gini_std": 0.021443004911526228,
+      "ks_mean": 0.4250846480421777,
+      "ks_std": 0.01800208672658516,
+      "brier_mean": 0.13552981520650306,
+      "brier_std": 0.002526593741516479,
+      "n_features_per_fold": [
+        9,
+        9,
+        12,
+        10,
+        10
+      ]
+    },
+    "challenger": {
+      "auc_mean": 0.7857210789009592,
+      "auc_std": 0.011561874711676731,
+      "gini_mean": 0.5714421578019185,
+      "gini_std": 0.02312374942335345,
+      "ks_mean": 0.43676652212301137,
+      "ks_std": 0.019328090038241808,
+      "brier_mean": 0.13342669250722872,
+      "brier_std": 0.003015686023366084
+    },
+    "variant_monotonic_pay": {
+      "auc_mean": 0.7653865936719562,
+      "auc_std": 0.011602376398245897,
+      "gini_mean": 0.5307731873439124,
+      "gini_std": 0.023204752796491854,
+      "ks_mean": 0.4193837023600753,
+      "ks_std": 0.017102575079459982,
+      "brier_mean": 0.13967880287414897,
+      "brier_std": 0.004329849363010938,
+      "n_features_per_fold": [
+        10,
+        7,
+        8,
+        6,
+        12
+      ]
+    }
+  },
+  "variant_monotonic_pay": {
+    "features": [
+      "PAY_1",
+      "MAX_DELINQ_6M",
+      "PAY_3",
+      "PAY_5",
+      "PAY_6",
+      "LIMIT_BAL",
+      "AVG_PAY_AMT_6M",
+      "PAY_AMT1",
+      "PAY_AMT2",
+      "PAY_AMT3",
+      "PAY_AMT4",
+      "AVG_UTIL_6M"
+    ],
+    "auc": 0.7624197962023284,
+    "gini": 0.5248395924046567,
+    "ks": 0.40056312759679935,
+    "brier": 0.13891644250986807,
+    "mean_pd": 0.2204949857074954,
+    "observed_rate": 0.2212222222222222,
+    "pay_1_bins": [
+      "<= 0",
+      "(0, 1]",
+      "> 1"
+    ]
+  },
+  "champion_features": [
+    "PAY_1",
+    "MAX_DELINQ_6M",
+    "PAY_3",
+    "PAY_5",
+    "PAY_6",
+    "LIMIT_BAL",
+    "AVG_PAY_AMT_6M",
+    "PAY_AMT1",
+    "PAY_AMT2",
+    "PAY_AMT3",
+    "AVG_UTIL_6M"
+  ],
+  "excluded_by_policy_iv": {
+    "EDUCATION": 0.03499449701833482
+  },
+  "challenger_iterations": 170,
+  "test": {
+    "champion": {
+      "auc": 0.7640074800864125,
+      "gini": 0.528014960172825,
+      "ks": 0.40379481959013885,
+      "brier": 0.13875647598130725,
+      "mean_pd": 0.2204366945051451,
+      "observed_rate": 0.2212222222222222,
+      "hl_chi2": 30.070120675749347,
+      "hl_p_value": 0.00020542950509644983,
+      "train_auc": 0.7771263203169452,
+      "psi_train_vs_test_score": 0.00048792644171457276,
+      "auc_integer_points_score": 0.7634287594216778,
+      "ks_integer_points_score": 0.4020259092868973
+    },
+    "challenger": {
+      "auc": 0.7807292897937996,
+      "gini": 0.5614585795875993,
+      "ks": 0.4244861614746742,
+      "brier": 0.13535237035475448,
+      "mean_pd": 0.21954071164663896,
+      "observed_rate": 0.2212222222222222,
+      "hl_chi2": 9.724255010714403,
+      "hl_p_value": 0.2849154561793203,
+      "train_auc": 0.7978048670526356,
+      "psi_train_vs_test_score": 0.000935164654354092
+    },
+    "auc_lift_challenger_minus_champion": 0.016721809707387125,
+    "gini_lift_challenger_minus_champion": 0.03344361941477425,
+    "auc_lift_bootstrap_95ci": [
+      0.012294613692109333,
+      0.02092501009577403
+    ]
+  },
+  "business": {
+    "champion_cutoff_score": 553.0,
+    "challenger_cutoff_score": 553.59,
+    "break_even_pd": 0.0963855421686747,
+    "champion": {
+      "approval_rate": 0.228,
+      "bad_rate_approved": 0.07456140350877193,
+      "bad_rate_declined": 0.2645365572826713,
+      "expected_loss_approved": 21444766.878958397,
+      "realised_loss_approved": 23838176.25,
+      "profit_approved": 4529802.19
+    },
+    "challenger": {
+      "approval_rate": 0.24566666666666667,
+      "bad_rate_approved": 0.05698778833107191,
+      "bad_rate_declined": 0.27470908823096185,
+      "expected_loss_approved": 17216027.06586977,
+      "realised_loss_approved": 14428297.5,
+      "profit_approved": 13023958.100000001
+    },
+    "profit_approve_all": -73659952.035,
+    "expected_loss_all": 130253899.05079526,
+    "realised_loss_all": 138018226.875,
+    "total_ead_test": 988502738.0,
+    "profit_diff_challenger_minus_champion": 8494155.91,
+    "profit_diff_bootstrap_95ci": [
+      4998116.667125,
+      12428685.972499998
+    ]
+  },
+  "reason_code_sample": {
+    "test_row": 7,
+    "score": 535,
+    "cutoff": 553.0,
+    "pd": 0.15874198990243735,
+    "actual_default": 1
+  },
+  "fairness_min_air": {
+    "champion_SEX": 0.9790567499298344,
+    "champion_AGE_BAND": 0.25527567635533016,
+    "challenger_SEX": 0.9385386326925116,
+    "challenger_AGE_BAND": 0.29316951523629947
+  },
+  "runtime_seconds": 43.477535009384155
+}

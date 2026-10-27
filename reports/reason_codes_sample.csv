@@ -1,0 +1,5 @@
+rank,feature,reason,points_received,best_possible,points_lost
+1,AVG_PAY_AMT_6M,Low average payment amount over 6 months,44,55,11
+2,LIMIT_BAL,Low credit limit,44,52,8
+3,PAY_AMT3,Low payment amount 3 month(s) ago,47,54,7
+4,PAY_AMT2,Low payment amount 2 month(s) ago,47,53,6
