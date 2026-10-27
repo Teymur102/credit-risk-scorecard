@@ -3,11 +3,11 @@
 **Question:** can a transparent, bank-style points scorecard rank credit card default risk as well as a gradient-boosting model?
 **Answer:** close, but not quite. On a held-out test set of 9,000 accounts the scorecard reaches AUC 0.764 (KS 0.404) and the gradient-boosting challenger 0.781 (KS 0.424). The gap is small but statistically real (bootstrap 95% CI for the AUC difference: 0.012 to 0.021), and almost all of it sits among the lowest-risk accounts.
 
-![ROC and KS on the held-out test set](figures/roc_ks.png)
+![ROC and KS on the held-out test set](../figures/roc_ks.png)
 
 ## Data
 
-UCI "Default of Credit Card Clients" (id 350): 30,000 Taiwanese cardholders, six months of repayment status, balances and payments (April to September 2005), target = default on the next month's payment. The default rate is 22.12%. The raw zip is cached in `data/` and its SHA-256 is recorded in `reports/metrics.json`. See [`data/README.md`](data/README.md) for field definitions and the dataset's limits. The biggest one: these are existing customers, so this is a behavioural score and "approve / decline" stands in for an account-management decision.
+UCI "Default of Credit Card Clients" (id 350): 30,000 Taiwanese cardholders, six months of repayment status, balances and payments (April to September 2005), target = default on the next month's payment. The default rate is 22.12%. The raw zip is cached in `data/` and its SHA-256 is recorded in `reports/metrics.json`. See [`data/README.md`](../data/README.md) for field definitions and the dataset's limits. The biggest one: these are existing customers, so this is a behavioural score and "approve / decline" stands in for an account-management decision.
 
 Split: stratified random 70/30 (21,000 train / 9,000 test, seed 42). The test set is used once, for final reporting. All model choices (variable selection, challenger tuning, cutoff) are made on the training set with 5-fold cross-validation.
 
@@ -17,10 +17,10 @@ Split: stratified random 70/30 (21,000 train / 9,000 test, seed 42). The test se
 
 **Champion: WoE logistic regression scorecard** (`src/scorecard/woe.py`, `model.py`, `points.py`)
 1. Binning. Numeric variables: quantile pre-bins merged until every bin holds at least 5% of accounts and the bad rate is strictly monotonic. Repayment status `PAY_1`..`PAY_6` is binned as categories (levels under 5% pooled), because -2 / -1 / 0 are different behaviours rather than points on a scale.
-2. Weight of Evidence, WoE = ln(%good / %bad), and Information Value per variable ([`reports/iv_table.csv`](reports/iv_table.csv)).
+2. Weight of Evidence, WoE = ln(%good / %bad), and Information Value per variable ([`reports/iv_table.csv`](../reports/iv_table.csv)).
 3. Variable selection, in order: drop IV < 0.02 (weak); drop if IV varies across 5 folds by more than 25% (unstable); among WoE variables correlated above 0.70 keep the higher-IV one; fit the regression and drop wrong-sign coefficients, then coefficients with p > 0.05, one at a time.
-4. 11 variables survive. All coefficients are negative (correct sign for WoE inputs) with p < 0.05 ([`reports/champion_coefficients.csv`](reports/champion_coefficients.csv)).
-5. Scaling: **PDO = 20, 600 points at good:bad odds of 50:1** (factor 28.854, offset 487.12). Each attribute's points = -(b_j x WoE + b0/n) x factor + offset/n, rounded to integers ([`reports/scorecard_points.csv`](reports/scorecard_points.csv)). The rounded integer score loses almost nothing: test AUC 0.7634 vs 0.7640 for the unrounded model.
+4. 11 variables survive. All coefficients are negative (correct sign for WoE inputs) with p < 0.05 ([`reports/champion_coefficients.csv`](../reports/champion_coefficients.csv)).
+5. Scaling: **PDO = 20, 600 points at good:bad odds of 50:1** (factor 28.854, offset 487.12). Each attribute's points = -(b_j x WoE + b0/n) x factor + offset/n, rounded to integers ([`reports/scorecard_points.csv`](../reports/scorecard_points.csv)). The rounded integer score loses almost nothing: test AUC 0.7634 vs 0.7640 for the unrounded model.
 
 **Challenger: gradient boosting** (`sklearn` HistGradientBoostingClassifier) on the same 25 variables. Four configurations compared by 5-fold CV on the training set. The shallowest won (7 leaves, learning rate 0.03, CV AUC 0.7857); the deepest (63 leaves) was worst (0.7812).
 
@@ -41,14 +41,14 @@ Split: stratified random 70/30 (21,000 train / 9,000 test, seed 42). The test se
 | Train AUC | 0.7771 | 0.7978 |
 | PSI, train vs test score | 0.0005 | 0.0009 |
 
-Source: [`reports/metrics.json`](reports/metrics.json), [`reports/cv_folds.csv`](reports/cv_folds.csv).
+Source: [`reports/metrics.json`](../reports/metrics.json), [`reports/cv_folds.csv`](../reports/cv_folds.csv).
 
 - **Discrimination.** The challenger's test AUC is 0.0167 higher (Gini +0.0334), 95% CI 0.0123 to 0.0209 from 1,000 paired bootstrap resamples. Real, but modest.
-- **Where the gap is.** At the same approval rate, the bad rate among approved accounts is 7.36% vs 5.60% at 22.8% approval, 9.80% vs 9.31% at 50%, and 16.99% vs 16.90% at 90% ([`reports/matched_approval_comparison.csv`](reports/matched_approval_comparison.csv)). The challenger is better at separating accounts with clean repayment histories, and it does that with the current balance (`BILL_AMT1`) and utilisation (`UTIL_1`), its 3rd and 4th most important inputs by permutation importance. The scorecard dropped both: one for weak IV (0.008), the other for correlation with average utilisation.
+- **Where the gap is.** At the same approval rate, the bad rate among approved accounts is 7.36% vs 5.60% at 22.8% approval, 9.80% vs 9.31% at 50%, and 16.99% vs 16.90% at 90% ([`reports/matched_approval_comparison.csv`](../reports/matched_approval_comparison.csv)). The challenger is better at separating accounts with clean repayment histories, and it does that with the current balance (`BILL_AMT1`) and utilisation (`UTIL_1`), its 3rd and 4th most important inputs by permutation importance. The scorecard dropped both: one for weak IV (0.008), the other for correlation with average utilisation.
 - **Calibration.** Both models get the overall default rate right (mean test PD 22.04% and 21.95% vs 22.12% observed). The scorecard is miscalibrated in the middle, though: in the 6th decile it predicts 14.6% and observes 20.0%, and Hosmer-Lemeshow rejects it (p = 0.0002). The challenger passes (p = 0.285).
 - **Stability.** PSI is close to zero for both. That is expected with a random split and is **not** evidence of stability over time (see Limitations).
 
-![Calibration and score distribution](figures/calibration.png)
+![Calibration and score distribution](../figures/calibration.png)
 
 ## Business layer
 
@@ -68,11 +68,11 @@ The cutoff is chosen to maximise profit on **out-of-fold training scores**, then
 
 The challenger's extra profit is NT$8.49M (bootstrap 95% CI 5.00M to 12.43M). On the whole test book the scorecard's expected loss is NT$130.25M against NT$138.02M realised, so in money terms it under-predicts losses by NT$7.77M.
 
-![Cutoff and profit curves](figures/cutoff_profit.png)
+![Cutoff and profit curves](../figures/cutoff_profit.png)
 
-**The cutoff depends heavily on the assumptions** ([`reports/economics_sensitivity.csv`](reports/economics_sensitivity.csv)). Across LGD 50/75/90% and margin 8/12/16%, the profit-maximising approval rate ranges from 20.5% to 76.2%. At LGD 90% and margin 8% even the best training cutoff loses money on test (NT$-0.05M). The base case approves so few accounts because this book defaults at 22%, far above the 9.6% break-even PD. That is a statement about the portfolio and the default definition, not about the model.
+**The cutoff depends heavily on the assumptions** ([`reports/economics_sensitivity.csv`](../reports/economics_sensitivity.csv)). Across LGD 50/75/90% and margin 8/12/16%, the profit-maximising approval rate ranges from 20.5% to 76.2%. At LGD 90% and margin 8% even the best training cutoff loses money on test (NT$-0.05M). The base case approves so few accounts because this book defaults at 22%, far above the 9.6% break-even PD. That is a statement about the portfolio and the default definition, not about the model.
 
-Full cutoff grid (approval rate, bad rate, expected and realised loss, profit by score decile): [`reports/cutoff_table_test.csv`](reports/cutoff_table_test.csv).
+Full cutoff grid (approval rate, bad rate, expected and realised loss, profit by score decile): [`reports/cutoff_table_test.csv`](../reports/cutoff_table_test.csv).
 
 ### Recommendation
 
@@ -83,9 +83,9 @@ Full cutoff grid (approval rate, bad rate, expected and realised loss, profit by
 
 ## Explainability
 
-- **Scorecard:** points per attribute in [`reports/scorecard_points.csv`](reports/scorecard_points.csv). By points range, last month's repayment status `PAY_1` dominates (53 points between best and worst attribute), followed by worst 6-month delinquency (16) and status 5 months ago (12).
-- **Challenger:** permutation importance on the test set (drop in AUC when a variable is shuffled), [`reports/challenger_permutation_importance.csv`](reports/challenger_permutation_importance.csv): worst 6-month delinquency 0.0347, `PAY_1` 0.0271, current balance 0.0099, current utilisation 0.0096.
-- **Reason codes for a declined account** (test row 7, the declined account closest to the median declined score: 535 points vs cutoff 553, PD 15.9%). Reasons are ranked by points lost against the best attribute of each variable ([`reports/reason_codes_sample.csv`](reports/reason_codes_sample.csv)):
+- **Scorecard:** points per attribute in [`reports/scorecard_points.csv`](../reports/scorecard_points.csv). By points range, last month's repayment status `PAY_1` dominates (53 points between best and worst attribute), followed by worst 6-month delinquency (16) and status 5 months ago (12).
+- **Challenger:** permutation importance on the test set (drop in AUC when a variable is shuffled), [`reports/challenger_permutation_importance.csv`](../reports/challenger_permutation_importance.csv): worst 6-month delinquency 0.0347, `PAY_1` 0.0271, current balance 0.0099, current utilisation 0.0096.
+- **Reason codes for a declined account** (test row 7, the declined account closest to the median declined score: 535 points vs cutoff 553, PD 15.9%). Reasons are ranked by points lost against the best attribute of each variable ([`reports/reason_codes_sample.csv`](../reports/reason_codes_sample.csv)):
 
 | Rank | Reason | Points received | Best possible |
 |---|---|---|---|
@@ -96,7 +96,7 @@ Full cutoff grid (approval rate, bad rate, expected and realised loss, profit by
 
 ## Fairness check
 
-At the chosen cutoff on the test set ([`reports/fairness_test.csv`](reports/fairness_test.csv)). The adverse impact ratio (AIR) is each group's approval rate divided by the highest group's.
+At the chosen cutoff on the test set ([`reports/fairness_test.csv`](../reports/fairness_test.csv)). The adverse impact ratio (AIR) is each group's approval rate divided by the highest group's.
 
 | Group | n | Approval rate | Default rate (all) | AIR | Below 0.8 |
 |---|---|---|---|---|---|
